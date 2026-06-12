@@ -1,13 +1,29 @@
 <script setup lang="ts">
-import { ref, provide } from "vue";
+import { provide, computed } from 'vue'
 
-const activedIndex = ref(0);
+const props = defineProps<{
+  active: number
+}>()
 
+const emit = defineEmits<{
+  (e: 'update:active', value: number): void
+}>()
+
+// 提供一个 computed 只读的 activedIndex
+const activedIndex = computed(() => props.active)
+
+// 提供一个更新方法，由子组件调用
 const setActivedIndex = (index: number) => {
-    activedIndex.value = index;
-};
+  if (index !== props.active) {
+    emit('update:active', index)
+  }
+}
 
-provide("navigation", { activedIndex, setActivedIndex });
+// 向子组件提供数据（与之前 BottomNavigationItem 中的 inject 匹配）
+provide('navigation', {
+  activedIndex,
+  setActivedIndex
+})
 </script>
 
 <template>
