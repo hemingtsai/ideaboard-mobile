@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import "@fontsource-variable/noto-serif-sc";
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 import BottomNavigationBar from "./components/BottomNavigationBar.vue";
 import BottomNavigationItem from "./components/BottomNavigationItem.vue";
@@ -12,13 +14,13 @@ import BottomNavigationItem from "./components/BottomNavigationItem.vue";
     <nav class="nav">
         <BottomNavigationBar>
             <BottomNavigationItem :index="0">
-                <template #label> Home </template>
+                <template #label> {{ t("message.home") }} </template>
             </BottomNavigationItem>
             <BottomNavigationItem :index="1">
-                <template #label> Projects </template>
+                <template #label> {{ t("message.projects") }} </template>
             </BottomNavigationItem>
             <BottomNavigationItem :index="2">
-                <template #label> Settings </template>
+                <template #label> {{ t("message.settings") }} </template>
             </BottomNavigationItem>
         </BottomNavigationBar>
     </nav>
