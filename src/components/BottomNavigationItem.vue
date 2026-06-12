@@ -1,6 +1,6 @@
 <template>
     <div class="nav-item" :class="{ active: isActive }" @click="handleClick">
-        <span class="label"><slot name="label"></slot></span>
+        <span class="label"><slot></slot></span>
     </div>
 </template>
 

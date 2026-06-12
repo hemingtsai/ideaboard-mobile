@@ -47,19 +47,21 @@ watch(activedIndex, (newIndex) => {
 </script>
 
 <template>
-    <main class="container">
-        <RouterView></RouterView>
-    </main>
+    <keep-alive>
+        <main class="container">
+            <RouterView></RouterView>
+        </main>
+    </keep-alive>
     <nav class="nav">
         <BottomNavigationBar v-model:active="activedIndex">
             <BottomNavigationItem :index="0">
-                <template #label> {{ t("message.home") }} </template>
+                {{ t("message.home") }}
             </BottomNavigationItem>
             <BottomNavigationItem :index="1">
-                <template #label> {{ t("message.projects") }} </template>
+                {{ t("message.projects") }}
             </BottomNavigationItem>
             <BottomNavigationItem :index="2">
-                <template #label> {{ t("message.settings") }} </template>
+                {{ t("message.settings") }}
             </BottomNavigationItem>
         </BottomNavigationBar>
     </nav>
