@@ -23,7 +23,10 @@ async function handleCopy() {
             <MarkdownRender :content="content" />
         </div>
         <div class="buttons-bar">
-            <IconButton @click="handleCopy" />
+            <IconButton
+                icon="material-symbols-light:copy-all-outline-sharp"
+                @click="handleCopy"
+            />
         </div>
     </div>
 </template>
