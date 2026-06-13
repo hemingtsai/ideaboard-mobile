@@ -11,17 +11,27 @@
   },
   "dependencies": {
     "@fontsource-variable/noto-serif-sc": "^5.2.10",
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2",
-    "vue": "^3.5.13",
+    "@tauri-apps/api": "^2.11.0",
+    "@tauri-apps/plugin-clipboard-manager": "~2.3.2",
+    "@tauri-apps/plugin-opener": "^2.5.4",
+    "@vueuse/core": "^14.3.0",
+    "dompurify": "^3.4.9",
+    "highlight.js": "^11.11.1",
+    "katex": "^0.17.0",
+    "markdown-it": "^14.2.0",
+    "mermaid": "^11.15.0",
+    "uuid": "^14.0.0",
+    "vue": "^3.5.38",
     "vue-i18n": "^11.4.5",
     "vue-router": "^5.1.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2",
-    "@vitejs/plugin-vue": "^5.2.1",
-    "typescript": "~5.6.2",
-    "vite": "^6.0.3",
-    "vue-tsc": "^2.1.10"
+    "@iconify/vue": "^5.0.1",
+    "@tauri-apps/cli": "^2.11.2",
+    "@types/markdown-it": "^14.1.2",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "typescript": "~5.6.3",
+    "vite": "^6.4.3",
+    "vue-tsc": "^2.2.12"
   }
 }
