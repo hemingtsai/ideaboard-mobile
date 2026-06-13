@@ -90,10 +90,10 @@ body,
 .container {
     flex: 1;
     overflow-y: auto;
-    padding: 0 2vh 0 2vh;
+    padding: env(safe-area-inset-top) 2vh 0 2vh;
 }
 
 .nav {
-    padding: 3vh;
+    padding: 0 3vh calc(env(safe-area-inset-bottom) + 2vh) 3vh;
 }
 </style>
