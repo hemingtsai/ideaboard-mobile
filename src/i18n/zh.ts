@@ -4,5 +4,6 @@ export const message_zh = {
     home: "主页",
     settings: "设置",
     projects: "项目",
+    composer_placeholder: "输入消息…",
   },
 };

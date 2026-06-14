@@ -4,5 +4,6 @@ export const message_en = {
     home: "Home",
     settings: "Settings",
     projects: "Projects",
+    composer_placeholder: "Type a message...",
   },
 };
