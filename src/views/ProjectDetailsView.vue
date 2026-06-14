@@ -1,8 +1,16 @@
 <script setup lang="ts">
 import AIReply from "../components/AIReply.vue";
 import Divider from "../components/Divider.vue";
+import IconButton from "../components/IconButton.vue";
 import MessageBubble from "../components/MessageBubble.vue";
 import PageHeader from "../components/PageHeader.vue";
+
+import { useRouter } from "vue-router";
+const router = useRouter();
+
+function handleEdit() {
+    router.push("/project/test/edit");
+}
 </script>
 
 <template>
@@ -18,6 +26,10 @@ import PageHeader from "../components/PageHeader.vue";
 graph TD
     A[Start] --> B[End]
 ```"
+        />
+        <IconButton
+            icon="material-symbols-light:edit-outline-sharp"
+            @click="handleEdit"
         />
     </div>
 </template>

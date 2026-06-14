@@ -89,8 +89,10 @@ body,
 <style scoped>
 .container {
     flex: 1;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
-    padding: env(safe-area-inset-top) 2vh 0 2vh;
+    padding: env(safe-area-inset-top) 2vh 2vh 2vh;
 }
 
 .nav {
