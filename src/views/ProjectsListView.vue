@@ -12,9 +12,17 @@ function handleClick() {
 </script>
 
 <template>
-    <h1>{{ t("message.projects") }}</h1>
-    <ItemCard @click="handleClick">
-        <template #card-title>Test Project</template>
-        <template #card-content>Details for the project</template>
-    </ItemCard>
+    <div class="projects-list">
+        <h1>{{ t("message.projects") }}</h1>
+        <ItemCard @click="handleClick">
+            <template #card-title>Test Project</template>
+            <template #card-content>Details for the project</template>
+        </ItemCard>
+    </div>
 </template>
+
+<style scoped>
+.projects-list {
+    overflow-y: auto;
+}
+</style>

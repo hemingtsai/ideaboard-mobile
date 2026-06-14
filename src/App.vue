@@ -47,11 +47,15 @@ watch(activedIndex, (newIndex) => {
 </script>
 
 <template>
-    <keep-alive>
-        <main class="container">
-            <RouterView></RouterView>
-        </main>
-    </keep-alive>
+    <main class="container">
+        <RouterView v-slot="{ Component }">
+            <transition name="page" mode="out-in">
+                <keep-alive>
+                    <component :is="Component" />
+                </keep-alive>
+            </transition>
+        </RouterView>
+    </main>
     <nav class="nav">
         <BottomNavigationBar v-model:active="activedIndex">
             <BottomNavigationItem :index="0">
@@ -78,6 +82,29 @@ watch(activedIndex, (newIndex) => {
     min-height: 100vh;
 }
 
+/* 页面过渡动画 */
+.page-enter-active {
+    transition:
+        opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-leave-active {
+    transition:
+        opacity 0.12s cubic-bezier(0.4, 0, 1, 1),
+        transform 0.12s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.page-enter-from {
+    opacity: 0;
+    transform: translateX(12px);
+}
+
+.page-leave-to {
+    opacity: 0;
+    transform: translateX(-12px);
+}
+
 html,
 body,
 #app {
@@ -89,9 +116,10 @@ body,
 <style scoped>
 .container {
     flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    overflow: hidden;
     padding: env(safe-area-inset-top) 2vh 2vh 2vh;
 }
 
