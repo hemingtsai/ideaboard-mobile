@@ -27,9 +27,38 @@ graph TD
     A[Start] --> B[End]
 ```"
         />
-        <IconButton
-            icon="material-symbols-light:edit-outline-sharp"
-            @click="handleEdit"
-        />
+        <div class="fab">
+            <IconButton
+                icon="material-symbols-light:edit-outline-sharp"
+                :size="48"
+                color="#000000"
+                textColor="white"
+                @click="handleEdit"
+            />
+        </div>
+        <div class="bottom-spacer" />
     </div>
 </template>
+
+<style scoped>
+.project-details-container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.fab {
+    position: sticky;
+    bottom: 2vh;
+    align-self: flex-end;
+    margin-top: 2vh;
+    z-index: 10;
+}
+
+.bottom-spacer {
+    flex: 1;
+    min-height: 8vh;
+}
+</style>
