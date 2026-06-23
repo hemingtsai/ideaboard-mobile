@@ -14,5 +14,8 @@
 }
 .message-content {
     max-width: 80%;
+    padding: 1vh 1.5vh 1vh 1.5vh;
+    color: white;
+    background-color: black;
 }
 </style>

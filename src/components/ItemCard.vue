@@ -7,3 +7,19 @@
     </div>
 </template>
 
+<style scoped>
+.card {
+    border: 1px solid black;
+    padding: 2vh;
+}
+
+.card h2 {
+    margin: 0 0 1vh 0;
+    font-size: 16px;
+}
+
+.card-content {
+    font-size: 14px;
+    color: #666;
+}
+</style>

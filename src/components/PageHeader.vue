@@ -18,18 +18,22 @@ function back() {
 
 <style scoped>
 .app-header {
-    position: relative;
+    position: sticky;
+    padding: 2vh 2vh 2vh 2vh;
+    top: 0;
+    z-index: 20;
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 48px;
     background-color: #fff;
+    border-bottom: 1px solid black;
     box-sizing: border-box;
 }
 
 .back-btn {
     position: absolute;
-    left: 0.5vh;
+    left: 2vh;
     font-size: 24px;
     line-height: 1;
     cursor: pointer;

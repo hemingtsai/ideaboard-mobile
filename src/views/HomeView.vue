@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useI18n } from "vue-i18n";
+import PageTitle from "../components/PageTitle.vue";
+
 const { t } = useI18n();
 </script>
 
 <template>
-    <h1>{{ t("message.ideaboard") }}</h1>
+    <PageTitle>{{ t("message.ideaboard") }}</PageTitle>
 </template>

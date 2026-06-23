@@ -4,10 +4,12 @@ import "@fontsource-variable/noto-serif-sc";
 
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 
 import BottomNavigationBar from "./components/BottomNavigationBar.vue";
 import BottomNavigationItem from "./components/BottomNavigationItem.vue";
+import DefaultLayout from "./layouts/DefaultLayout.vue";
+import HeaderLayout from "./layouts/HeaderLayout.vue";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -44,14 +46,38 @@ watch(activedIndex, (newIndex) => {
         router.push(targetPath);
     }
 });
+const layoutMap: Record<string, any> = {
+    default: DefaultLayout,
+    header: HeaderLayout,
+};
+
+const currentLayout = computed(() => {
+    const layout = route.meta.layout as string | undefined;
+    return layout ? layoutMap[layout] : null;
+});
+
+const layoutProps = computed(() => {
+    if (route.meta.layout === "header") {
+        return { title: route.meta.title as string };
+    }
+    return {};
+});
 </script>
 
 <template>
     <main class="container">
-        <RouterView v-slot="{ Component }">
+        <RouterView v-slot="{ Component, route: r }">
             <transition name="page" mode="out-in">
                 <keep-alive>
-                    <component :is="Component" />
+                    <component
+                        :is="currentLayout"
+                        v-if="currentLayout"
+                        v-bind="layoutProps"
+                        :key="r.path"
+                    >
+                        <component :is="Component" />
+                    </component>
+                    <component :is="Component" v-else :key="r.path" />
                 </keep-alive>
             </transition>
         </RouterView>
@@ -79,7 +105,8 @@ watch(activedIndex, (newIndex) => {
 #app {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
 }
 
 /* 页面过渡动画 */
@@ -119,11 +146,13 @@ body,
     min-height: 0;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    padding: env(safe-area-inset-top) 2vh 2vh 2vh;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    padding: env(safe-area-inset-top) 0 2vh 0;
 }
 
 .nav {
+    border-top: 1px solid black;
     padding: 0 3vh calc(env(safe-area-inset-bottom) + 2vh) 3vh;
 }
 </style>
