@@ -44,8 +44,8 @@ async function handleSend() {
             <IconButton
                 icon="material-symbols-light:send"
                 :size="36"
-                color="#000000"
-                textColor="white"
+                color="var(--accent)"
+                textColor="var(--accent-contrast)"
                 @click="handleSend"
             />
         </span>
@@ -57,8 +57,8 @@ async function handleSend() {
     display: flex;
     align-items: center;
     width: 100%;
-    border: 1px solid black;
-    background-color: white;
+    border: 1px solid var(--border-primary);
+    background-color: var(--bg-primary);
     padding: 8px;
     gap: 8px;
     box-sizing: border-box;
@@ -71,7 +71,7 @@ async function handleSend() {
     background: transparent;
     font-family: inherit;
     font-size: 15px;
-    color: black;
+    color: var(--text-primary);
     resize: none;
     line-height: 1.4;
     padding: 0;
@@ -80,7 +80,7 @@ async function handleSend() {
 }
 
 .input::placeholder {
-    color: #999;
+    color: var(--text-tertiary);
 }
 
 .send-btn {

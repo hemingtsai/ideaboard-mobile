@@ -31,11 +31,37 @@ const props = withDefaults(
     },
 );
 
-// ===================== 初始化 Mermaid =====================
+// ===================== 初始化 Mermaid（主题自适应） =====================
+function getMermaidThemeConfig() {
+    const style = getComputedStyle(document.documentElement);
+    const get = (v: string) => style.getPropertyValue(v).trim();
+
+    const isDark =
+        document.documentElement.getAttribute("data-theme") === "dark" ||
+        (!document.documentElement.hasAttribute("data-theme") &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+    if (!isDark) {
+        return { theme: "neutral" as const };
+    }
+
+    return {
+        theme: "base" as const,
+        themeVariables: {
+            primaryColor: get("--bg-secondary") || "#1a1a1a",
+            primaryTextColor: get("--text-primary") || "#e0e0e0",
+            primaryBorderColor: get("--border-primary") || "#333333",
+            lineColor: get("--text-secondary") || "#888888",
+            secondaryColor: get("--bg-tertiary") || "#242424",
+            tertiaryColor: get("--bg-primary") || "#111111",
+        },
+    };
+}
+
 mermaid.initialize({
     startOnLoad: false,
-    theme: "neutral",
     securityLevel: "sandbox",
+    ...getMermaidThemeConfig(),
 });
 
 // ===================== UUID 生成 =====================
@@ -365,6 +391,47 @@ const sanitizedHtml = computed(() => {
     });
 });
 
+// ===================== 主题切换时重新渲染 Mermaid =====================
+function refreshMermaidTheme() {
+    mermaid.initialize({
+        startOnLoad: false,
+        securityLevel: "sandbox",
+        ...getMermaidThemeConfig(),
+    });
+
+    // 重置所有已渲染的块
+    for (const block of mermaidBlocks.value.values()) {
+        block.rendered = false;
+    }
+
+    // 移除已渲染标记
+    const container = document.querySelector(".markdown-render");
+    if (container) {
+        container
+            .querySelectorAll(".mermaid-container.mermaid-rendered")
+            .forEach((el) => el.classList.remove("mermaid-rendered"));
+    }
+
+    renderMermaidBlocks();
+}
+
+// 监听系统主题变化
+const darkModeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+darkModeQuery.addEventListener("change", () => {
+    if (!document.documentElement.hasAttribute("data-theme")) {
+        refreshMermaidTheme();
+    }
+});
+
+// 监听手动 data-theme 切换
+const themeObserver = new MutationObserver(() => {
+    refreshMermaidTheme();
+});
+themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+});
+
 // ===================== 生命周期 =====================
 onMounted(() => {
     if (props.content) {
@@ -401,13 +468,13 @@ onMounted(() => {
 
 .markdown-render h1 {
     font-size: 1.5em;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--border-secondary);
     padding-bottom: 0.3em;
 }
 
 .markdown-render h2 {
     font-size: 1.3em;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--border-secondary);
     padding-bottom: 0.25em;
 }
 
@@ -420,7 +487,7 @@ onMounted(() => {
 }
 
 .markdown-render a {
-    color: #2563eb;
+    color: var(--accent);
     text-decoration: none;
 }
 
@@ -460,9 +527,9 @@ onMounted(() => {
 .markdown-render blockquote {
     margin: 0.5em 0;
     padding: 0.3em 1em;
-    border-left: 3px solid #000;
-    color: #6b7280;
-    background: #f9fafb;
+    border-left: 3px solid var(--border-primary);
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
 }
 
 /* ===================== 代码块 ===================== */
@@ -476,9 +543,9 @@ onMounted(() => {
 /* 行内代码 */
 .markdown-render :not(pre) > code {
     padding: 0.15em 0.4em;
-    background: #f3f4f6;
-    color: #1f2937;
-    border: 1px solid #e5e7eb;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-secondary);
 }
 
 /* 代码块容器 */
@@ -486,9 +553,9 @@ onMounted(() => {
     margin: 0.75em 0;
     padding: 1em;
     overflow-x: auto;
-    background: #fff;
-    color: #1f2937;
-    border: 1px solid #000;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-primary);
 }
 
 .markdown-render pre.hljs code {
@@ -509,24 +576,24 @@ onMounted(() => {
 .markdown-render th,
 .markdown-render td {
     padding: 0.5em 0.75em;
-    border: 1px solid #000;
+    border: 1px solid var(--border-primary);
     text-align: left;
 }
 
 .markdown-render th {
-    background: #f3f4f6;
+    background: var(--bg-tertiary);
     font-weight: 600;
 }
 
 .markdown-render tr:nth-child(even) td {
-    background: #f9fafb;
+    background: var(--bg-secondary);
 }
 
 /* ===================== 分割线 ===================== */
 .markdown-render hr {
     margin: 1.5em 0;
     border: none;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--border-secondary);
 }
 
 /* ===================== 图片 ===================== */
@@ -563,15 +630,15 @@ onMounted(() => {
     display: block;
     padding: 0.5em;
     background: #fef2f2;
-    border: 1px solid #000;
+    border: 1px solid var(--border-primary);
 }
 
 /* ===================== Mermaid 图表样式 ===================== */
 .markdown-render .mermaid-container {
     margin: 1em 0;
     padding: 1em;
-    background: #fff;
-    border: 1px solid #000;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
     overflow-x: auto;
     text-align: center;
 }

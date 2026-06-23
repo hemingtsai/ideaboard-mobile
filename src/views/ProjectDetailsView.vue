@@ -45,8 +45,8 @@ A[Start] --> B[End]
         <IconButton
             icon="material-symbols-light:edit-outline-sharp"
             :size="48"
-            color="#000000"
-            textColor="white"
+            color="var(--accent)"
+            textColor="var(--accent-contrast)"
             @click="handleEdit"
         />
     </div>

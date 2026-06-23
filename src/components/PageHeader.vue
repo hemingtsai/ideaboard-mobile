@@ -26,8 +26,8 @@ function back() {
     align-items: center;
     justify-content: center;
     min-height: 48px;
-    background-color: #fff;
-    border-bottom: 1px solid black;
+    background-color: var(--bg-primary);
+    border-bottom: 1px solid var(--border-primary);
     box-sizing: border-box;
 }
 

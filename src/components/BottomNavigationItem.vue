@@ -42,7 +42,7 @@ const handleClick = () => {
     transform: translateX(-50%);
     width: 0;
     height: 2px;
-    background-color: black;
+    background-color: var(--accent);
     transition: width 0.2s;
 }
 .nav-item.active::after {

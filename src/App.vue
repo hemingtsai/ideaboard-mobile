@@ -46,6 +46,7 @@ watch(activedIndex, (newIndex) => {
         router.push(targetPath);
     }
 });
+
 const layoutMap: Record<string, any> = {
     default: DefaultLayout,
     header: HeaderLayout,
@@ -73,11 +74,11 @@ const layoutProps = computed(() => {
                         :is="currentLayout"
                         v-if="currentLayout"
                         v-bind="layoutProps"
-                        :key="r.path"
+                        :key="'layout-' + r.path"
                     >
                         <component :is="Component" />
                     </component>
-                    <component :is="Component" v-else :key="r.path" />
+                    <component :is="Component" v-else :key="'page-' + r.path" />
                 </keep-alive>
             </transition>
         </RouterView>
@@ -100,6 +101,15 @@ const layoutProps = computed(() => {
 <style>
 * {
     font-family: "Noto Serif SC Variable";
+}
+
+html,
+body,
+#app {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 #app {
@@ -131,13 +141,6 @@ const layoutProps = computed(() => {
     opacity: 0;
     transform: translateX(-12px);
 }
-
-html,
-body,
-#app {
-    margin: 0;
-    padding: 0;
-}
 </style>
 
 <style scoped>
@@ -149,10 +152,12 @@ body,
     overflow-y: auto;
     scrollbar-gutter: stable;
     padding: env(safe-area-inset-top) 0 2vh 0;
+    background-color: var(--bg-primary);
 }
 
 .nav {
-    border-top: 1px solid black;
+    border-top: 1px solid var(--border-primary);
     padding: 0 3vh calc(env(safe-area-inset-bottom) + 2vh) 3vh;
+    background-color: var(--bg-primary);
 }
 </style>

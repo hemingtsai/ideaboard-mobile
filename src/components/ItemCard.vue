@@ -9,7 +9,7 @@
 
 <style scoped>
 .card {
-    border: 1px solid black;
+    border: 1px solid var(--border-primary);
     padding: 2vh;
 }
 
@@ -20,6 +20,6 @@
 
 .card-content {
     font-size: 14px;
-    color: #666;
+    color: var(--text-secondary);
 }
 </style>

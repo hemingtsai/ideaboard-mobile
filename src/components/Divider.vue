@@ -16,6 +16,6 @@
 
 .divider {
     width: 50%;
-    border-top: 1px solid black;
+    border-top: 1px solid var(--border-primary);
 }
 </style>

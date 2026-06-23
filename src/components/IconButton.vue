@@ -20,8 +20,8 @@ const props = withDefaults(
     {
         icon: "material-symbols-light:10k-sharp",
         size: 36,
-        color: "#FFFFFF",
-        textColor: "black",
+        color: "var(--bg-primary)",
+        textColor: "var(--text-primary)",
     },
 );
 
