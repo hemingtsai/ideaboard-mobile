@@ -44,18 +44,27 @@ const cardClass = computed<Record<string, boolean>>(() => ({
         </div>
         <!-- 分栏模式 -->
         <template v-if="splited">
-            <h2 v-if="!notitle && !rightFull && !leftFull">
+            <h2
+                v-if="!notitle && !rightFull && !leftFull"
+                :class="{ flush: props.flush }"
+            >
                 <slot name="card-title" />
             </h2>
             <div class="card-columns">
                 <div class="card-column" :style="leftStyle">
-                    <h2 v-if="!notitle && rightFull">
+                    <h2
+                        v-if="!notitle && rightFull"
+                        :class="{ flush: props.flush }"
+                    >
                         <slot name="card-title" />
                     </h2>
                     <slot name="card-content-left" />
                 </div>
                 <div class="card-column" :style="rightStyle">
-                    <h2 v-if="!notitle && leftFull">
+                    <h2
+                        v-if="!notitle && leftFull"
+                        :class="{ flush: props.flush }"
+                    >
                         <slot name="card-title" />
                     </h2>
                     <slot name="card-content-right" />
@@ -65,7 +74,9 @@ const cardClass = computed<Record<string, boolean>>(() => ({
 
         <!-- 默认模式 -->
         <template v-else>
-            <h2 v-if="!notitle"><slot name="card-title" /></h2>
+            <h2 v-if="!notitle" :class="{ flush: props.flush }">
+                <slot name="card-title" />
+            </h2>
             <div class="card-content">
                 <slot name="card-content" />
             </div>
@@ -88,9 +99,13 @@ const cardClass = computed<Record<string, boolean>>(() => ({
 }
 
 h2 {
-    margin: 3vw;
+    margin: 0;
     position: relative;
     z-index: 1;
+}
+
+h2.flush {
+    margin: 3vw;
 }
 
 .card-content {
@@ -114,5 +129,6 @@ h2 {
 
 .card.flush {
     padding: 0;
+    border: none;
 }
 </style>
