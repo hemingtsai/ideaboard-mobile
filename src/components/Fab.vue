@@ -40,7 +40,7 @@ defineEmits<{
 <style scoped>
 .fab {
     position: sticky;
-    bottom: 2vh;
+    bottom: 1vh;
     align-self: flex-end;
     margin-top: 2vh;
     z-index: 10;

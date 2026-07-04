@@ -35,6 +35,7 @@ const cardClass = computed<Record<string, boolean>>(() => ({
     splited: props.splited,
     "right-full": props.rightFull,
     "left-full": props.leftFull,
+    noborder: props.noborder,
 }));
 </script>
 
@@ -100,6 +101,7 @@ const cardClass = computed<Record<string, boolean>>(() => ({
 }
 
 h2 {
+    color: var(--text-primary);
     margin: 0;
     position: relative;
     z-index: 1;
@@ -130,5 +132,9 @@ h2.flush {
 
 .card.flush {
     padding: 0;
+}
+
+.card.noborder {
+    border: 0;
 }
 </style>
