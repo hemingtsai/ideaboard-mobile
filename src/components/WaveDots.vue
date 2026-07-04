@@ -470,7 +470,7 @@ onMounted(() => {
         powerPreference: "high-performance",
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0, 0, 0, 0);
+    renderer.setClearColor(0, 0);
 
     scene = new THREE.Scene();
     cssWidth = container.clientWidth;
