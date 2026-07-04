@@ -9,7 +9,7 @@ defineProps<{
     done: boolean;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
     toggle: [];
 }>();
 </script>

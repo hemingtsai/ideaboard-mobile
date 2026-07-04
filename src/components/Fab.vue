@@ -20,7 +20,7 @@ withDefaults(
     },
 );
 
-const emit = defineEmits<{
+defineEmits<{
     click: [];
 }>();
 </script>

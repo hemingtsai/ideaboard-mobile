@@ -2,7 +2,7 @@
 import MessageComposer from "../components/MessageComposer.vue";
 import HeaderLayout from "../layouts/HeaderLayout.vue";
 
-function handleSend(message: string) {
+function handleSend(_message: string) {
     // TODO: 处理发送逻辑
 }
 </script>
