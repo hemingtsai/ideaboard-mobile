@@ -19,6 +19,12 @@ const props = withDefaults(
         ambientBrightness?: number;
         /** 峰值亮度 */
         peakBrightness?: number;
+        /** 是否自动播放海浪，默认 false */
+        playing?: boolean;
+        /** 单次触发的海浪持续时间 (秒)，默认自动计算一个完整周期 */
+        duration?: number;
+        /** 非线性缓动动画，默认关闭 */
+        easing?: boolean;
     }>(),
     {
         dotSpacing: 4,
@@ -28,6 +34,9 @@ const props = withDefaults(
         mouseStrength: 0.8,
         ambientBrightness: 0.0,
         peakBrightness: 0.95,
+        playing: true,
+        duration: 0,
+        easing: false,
     },
 );
 
@@ -46,7 +55,6 @@ let cssWidth = 0;
 let cssHeight = 0;
 let animationId = 0;
 let resizeObserver: ResizeObserver | null = null;
-const clock = new THREE.Clock();
 
 const accentColor = new THREE.Color();
 const bgColor = new THREE.Color();
@@ -57,6 +65,13 @@ let mouseY = -999;
 let mouseActive = false;
 let mouseIntensity = 0;
 let mouseClickStrength = 0;
+
+// 定时器 (替代 THREE.Clock)
+let lastTime = 0;
+
+// 手动触发海浪
+let waveElapsed = 0;
+let waveTarget = 0;
 
 const CONFIG = {
     dotSizeFactor: 0.85,
@@ -128,6 +143,9 @@ const fragmentShader = /* glsl */ `
     uniform float uMouseRadius;
     uniform float uMouseStrength;
     uniform float uMouseRippleSpeed;
+    uniform float uSingleWave;
+    uniform float uEasing;
+    uniform float uDuration;
 
     float naturalPulse(float phase, float riseSigma, float fallSigma) {
         float p = clamp(phase, -3.14159, 3.14159);
@@ -150,8 +168,24 @@ const fragmentShader = /* glsl */ `
         float peakWidth = uWaveWidth * w;
         float gapWidth = peakWidth * uGapFactor;
         float period = peakWidth + gapWidth;
-        float vt = uWaveSpeed * w * uTime;
-        float xMod = fract((x - vt + rowPhase * peakWidth * 0.3) / period) * period;
+        // 非线性缓动
+        float t = uTime;
+        if (uEasing > 0.5 && uDuration > 0.0) {
+            float p = clamp(uTime / uDuration, 0.0, 1.0);
+            // ease-in-out (smoothstep)
+            float eased = p * p * (3.0 - 2.0 * p);
+            t = eased * uDuration;
+        }
+        float vt = uWaveSpeed * w * t;
+        // 单次触发：不重复；自动播放：重复波浪
+        float xMod;
+        if (uSingleWave > 0.5) {
+            // 单次海浪：波峰从 -peakWidth 移动到 w
+            float waveCenter = vt - peakWidth * 0.5;
+            xMod = x - waveCenter;
+        } else {
+            xMod = fract((x - vt + rowPhase * peakWidth * 0.3) / period) * period;
+        }
 
         float waveBrightness = 0.0;
         if (xMod < peakWidth) {
@@ -173,6 +207,8 @@ const fragmentShader = /* glsl */ `
         finalBrightness = clamp(finalBrightness, uAmbient, uPeak);
         finalBrightness = max(finalBrightness, uAmbient);
         finalBrightness *= (1.0 - d);
+
+        if (finalBrightness < 0.02) discard;
 
         vec3 color = mix(uBgColor, uAccentColor, finalBrightness);
         if (finalBrightness > 0.6) {
@@ -253,10 +289,13 @@ function buildScene() {
             uMouseRadius: { value: props.mouseRadius },
             uMouseStrength: { value: props.mouseStrength },
             uMouseRippleSpeed: { value: CONFIG.mouseRippleSpeed },
+            uSingleWave: { value: 0 },
+            uEasing: { value: 0 },
+            uDuration: { value: 1 },
         },
         vertexShader,
         fragmentShader,
-        transparent: false,
+        transparent: true,
         depthTest: false,
         depthWrite: false,
     });
@@ -278,6 +317,23 @@ function buildScene() {
     renderer.setSize(cssWidth, cssHeight, false);
 }
 
+// ==================== 触发海浪 ====================
+/** 单次触发一个海浪从左到右 */
+function triggerWave() {
+    // 重置时间，让海浪从屏幕左侧开始
+    const period = (1 + props.waveWidth) / Math.max(props.waveSpeed, 0.01);
+    const dur = props.duration > 0 ? props.duration : period;
+    waveTarget = dur;
+    waveElapsed = 0;
+    if (material) {
+        material.uniforms.uTime.value = 0;
+        material.uniforms.uSingleWave.value = 1;
+        material.uniforms.uDuration.value = dur;
+    }
+}
+
+defineExpose({ triggerWave });
+
 // ==================== 事件处理 ====================
 function getRelativePos(e: PointerEvent): { x: number; y: number } {
     const rect = containerRef.value!.getBoundingClientRect();
@@ -286,7 +342,6 @@ function getRelativePos(e: PointerEvent): { x: number; y: number } {
         y: e.clientY - rect.top,
     };
 }
-
 function onPointerMove(e: PointerEvent) {
     const pos = getRelativePos(e);
     mouseX = pos.x;
@@ -307,9 +362,24 @@ function onPointerDown() {
 }
 
 // ==================== 动画循环 ====================
-function animate() {
+function animate(now: number) {
     animationId = requestAnimationFrame(animate);
-    const dt = Math.min(clock.getDelta(), 0.1);
+
+    // 基于 performance.now 的 delta (秒)
+    const dt = lastTime ? Math.min((now - lastTime) / 1000, 0.1) : 0;
+    lastTime = now;
+
+    // 手动触发的海浪计时
+    let waveActive = false;
+    if (waveElapsed < waveTarget) {
+        waveElapsed += dt;
+        waveActive = true;
+    } else if (material && material.uniforms.uSingleWave.value > 0.5) {
+        material.uniforms.uSingleWave.value = 0;
+    }
+
+    // 时间推进：自动播放 或 手动触发中
+    const shouldAdvanceTime = props.playing || waveActive;
 
     if (!mouseActive) {
         mouseIntensity *= Math.pow(CONFIG.mouseDecay, dt);
@@ -326,15 +396,30 @@ function animate() {
         mouseIntensity + mouseClickStrength * CONFIG.mouseClickBoost,
     );
 
-    if (material) {
+    const hasActivity =
+        shouldAdvanceTime ||
+        mouseActive ||
+        mouseIntensity > 0.001 ||
+        mouseClickStrength > 0.001;
+
+    if (points) {
+        points.visible = hasActivity;
+    }
+
+    if (material && shouldAdvanceTime) {
         material.uniforms.uTime.value += dt;
+    }
+    if (material) {
+        material.uniforms.uEasing.value = props.easing ? 1 : 0;
+        material.uniforms.uDuration.value =
+            props.duration > 0
+                ? props.duration
+                : (1 + props.waveWidth) / Math.max(props.waveSpeed, 0.01);
         material.uniforms.uMousePos.value.set(mouseX, mouseY);
         material.uniforms.uMouseActive.value = activeStrength;
     }
 
-    if (currentCamera) {
-        renderer.render(scene, currentCamera);
-    }
+    renderer.render(scene, currentCamera);
 }
 
 // ==================== 容器尺寸监听 ====================
@@ -368,7 +453,6 @@ function setupThemeWatcher() {
         if (!root.hasAttribute("data-theme")) updateThemeColors();
     });
 }
-
 function teardownThemeWatcher() {
     themeObserver?.disconnect();
     darkMq?.removeEventListener("change", updateThemeColors);
@@ -386,6 +470,7 @@ onMounted(() => {
         powerPreference: "high-performance",
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0, 0, 0, 0);
 
     scene = new THREE.Scene();
     cssWidth = container.clientWidth;
@@ -395,6 +480,9 @@ onMounted(() => {
     buildScene();
     setupThemeWatcher();
 
+    // 初始渲染清空 canvas，后续由 hasActivity 控制
+    renderer.render(scene, currentCamera);
+
     resizeObserver = new ResizeObserver(updateSize);
     resizeObserver.observe(container);
 
@@ -403,7 +491,7 @@ onMounted(() => {
     container.addEventListener("pointerenter", onPointerEnter);
     container.addEventListener("pointerdown", onPointerDown);
 
-    animate();
+    requestAnimationFrame(animate);
 });
 
 onUnmounted(() => {
@@ -441,5 +529,6 @@ onUnmounted(() => {
     display: block;
     width: 100%;
     height: 100%;
+    background: transparent;
 }
 </style>
