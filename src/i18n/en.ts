@@ -8,5 +8,6 @@ export const message_en = {
     project_progress: "Project Progress",
     todo_list: "Todo List",
     todo_empty: "No todos yet",
+    project_name: "Project Name",
   },
 };

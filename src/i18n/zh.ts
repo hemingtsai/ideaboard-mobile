@@ -8,5 +8,6 @@ export const message_zh = {
     project_progress: "项目进度",
     todo_list: "待办清单",
     todo_empty: "暂无待办",
+    project_name: "项目名称",
   },
 };

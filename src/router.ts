@@ -5,6 +5,7 @@ import ProjectsListView from "./views/ProjectsListView.vue";
 import SettingsView from "./views/SettingsView.vue";
 import ProjectDetailsView from "./views/ProjectDetailsView.vue";
 import ProjectEditView from "./views/ProjectEditView.vue";
+import ProjectNewView from "./views/ProjectNewView.vue";
 
 const routes = [
   { path: "/", component: HomeView, meta: { layout: "default" } },
@@ -14,6 +15,11 @@ const routes = [
     meta: { layout: "default" },
   },
   { path: "/settings", component: SettingsView, meta: { layout: "default" } },
+  {
+    path: "/project/new",
+    component: ProjectNewView,
+    meta: { layout: "none" },
+  },
   {
     path: "/project/:id",
     component: ProjectDetailsView,
