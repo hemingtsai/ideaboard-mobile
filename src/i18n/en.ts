@@ -5,5 +5,6 @@ export const message_en = {
     settings: "Settings",
     projects: "Projects",
     composer_placeholder: "Type a message...",
+    project_progress: "Project Progress",
   },
 };
