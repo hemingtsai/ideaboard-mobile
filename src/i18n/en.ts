@@ -9,5 +9,7 @@ export const message_en = {
     todo_list: "Todo List",
     todo_empty: "No todos yet",
     project_name: "Project Name",
+    heatmap: "Heatmap",
+    recent_projects: "Recent Projects",
   },
 };

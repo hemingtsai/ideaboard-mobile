@@ -20,14 +20,14 @@ const heatmap_data = ref<number[][]>([
 <template>
     <PageTitle>{{ t("message.ideaboard") }}</PageTitle>
     <ItemCard noborder flush>
-        <template #card-title>热力图</template>
+        <template #card-title>{{ t("message.heatmap") }}</template>
         <template #card-content>
             <Heatmap :data="heatmap_data" :cellSize="20" />
         </template>
     </ItemCard>
 
     <ItemCard noborder flush>
-        <template #card-title>最近项目</template>
+        <template #card-title>{{ t("message.recent_projects") }}</template>
         <template #card-content>
             <ProjectCard
                 to="test"

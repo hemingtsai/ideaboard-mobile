@@ -9,5 +9,7 @@ export const message_zh = {
     todo_list: "待办清单",
     todo_empty: "暂无待办",
     project_name: "项目名称",
+    heatmap: "热力图",
+    recent_projects: "最近项目",
   },
 };
