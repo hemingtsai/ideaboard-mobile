@@ -7,5 +7,6 @@ export const message_zh = {
     composer_placeholder: "输入消息…",
     project_progress: "项目进度",
     todo_list: "待办清单",
+    todo_empty: "暂无待办",
   },
 };

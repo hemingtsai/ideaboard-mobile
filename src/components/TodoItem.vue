@@ -33,7 +33,7 @@ const emit = defineEmits<{
     display: flex;
     align-items: center;
     gap: 3vw;
-    padding: 1.5vh 2vh;
+    padding: 1vh 2vh;
 }
 
 .todo-title {

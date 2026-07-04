@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import IconButton from "../components/IconButton.vue";
+import Fab from "../components/Fab.vue";
 import PageTitle from "../components/PageTitle.vue";
 import ItemCard from "../components/ItemCard.vue";
 import "@fontsource/barlow-condensed";
@@ -28,70 +28,80 @@ function handleEdit() {
 </script>
 
 <template>
-    <PageTitle>Test Project</PageTitle>
+    <div class="view-content-container">
+        <PageTitle>Test Project</PageTitle>
 
-    <div class="cards">
-        <ItemCard splited flush rightFull :splitRatio="0.7">
-            <template #card-background>
-                <WaveDots
-                    :dotSpacing="4"
-                    :waveSpeed="0.15"
-                    :waveWidth="0.4"
-                    :mouseRadius="100"
-                    :mouseStrength="0.4"
-                    :ambientBrightness="0"
-                    :peakBrightness="0.5"
-                />
-            </template>
-            <template #card-title>{{ t("message.project_progress") }}</template>
-            <template #card-content-left>
-                <div style="padding: 3vw">
-                    <div style="height: 2vh" />
-                    <Heatmap :data="heatmap_data" style="padding-bottom: 1vh" />
-                    <ProgressBar :height="10" :value="86" />
-                </div>
-            </template>
-            <template #card-content-right
-                ><div class="percents-container">
-                    <div class="percents">
-                        <span class="percents-number">86%</span>
+        <div class="cards">
+            <ItemCard splited flush rightFull :splitRatio="0.7">
+                <template #card-background>
+                    <WaveDots
+                        :dotSpacing="4"
+                        :waveSpeed="0.15"
+                        :waveWidth="0.4"
+                        :mouseRadius="100"
+                        :mouseStrength="0.4"
+                        :ambientBrightness="0"
+                        :peakBrightness="0.5"
+                    />
+                </template>
+                <template #card-title>{{
+                    t("message.project_progress")
+                }}</template>
+                <template #card-content-left>
+                    <div style="padding: 3vw">
+                        <div style="height: 2vh" />
+                        <Heatmap
+                            :data="heatmap_data"
+                            style="padding-bottom: 1vh"
+                        />
+                        <ProgressBar :height="10" :value="86" />
                     </div>
-                </div></template
-            >
-        </ItemCard>
+                </template>
+                <template #card-content-right
+                    ><div class="percents-container">
+                        <div class="percents">
+                            <span class="percents-number">86%</span>
+                        </div>
+                    </div></template
+                >
+            </ItemCard>
 
-        <TodoList>
-            <template #title>
-                {{ t("message.todo_list") }}
-            </template>
-            <TodoItem :key="1" title="I don't know what is it" :done="false" />
-        </TodoList>
+            <TodoList>
+                <template #title>
+                    {{ t("message.todo_list") }}
+                </template>
+                <TodoItem
+                    :key="1"
+                    title="I do not know what to do."
+                    :done="false"
+                />
+                <TodoItem
+                    :key="1"
+                    title="I do not know how to do it."
+                    :done="false"
+                />
+            </TodoList>
+        </div>
     </div>
 
-    <div class="fab">
-        <IconButton
-            icon="material-symbols-light:edit-outline-sharp"
-            :size="48"
-            color="var(--accent)"
-            textColor="var(--accent-contrast)"
-            @click="handleEdit"
-        />
-    </div>
+    <Fab
+        icon="material-symbols-light:edit-outline-sharp"
+        :size="48"
+        color="var(--accent)"
+        textColor="var(--accent-contrast)"
+        @click="handleEdit"
+    />
 </template>
 
 <style scoped>
+.view-content-container {
+    min-height: 100%;
+}
+
 .cards {
     display: flex;
     flex-direction: column;
     gap: 2vh;
-}
-
-.fab {
-    position: sticky;
-    bottom: 2vh;
-    align-self: flex-end;
-    margin-top: 2vh;
-    z-index: 10;
 }
 
 .percents-container {

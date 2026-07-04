@@ -7,5 +7,6 @@ export const message_en = {
     composer_placeholder: "Type a message...",
     project_progress: "Project Progress",
     todo_list: "Todo List",
+    todo_empty: "No todos yet",
   },
 };
