@@ -10,6 +10,7 @@ const props = withDefaults(
         leftFull?: boolean;
         /** 左栏宽度比例 (0–1)，默认 0.5 */
         splitRatio?: number;
+        noborder?: boolean;
     }>(),
     {
         splited: false,
@@ -129,6 +130,5 @@ h2.flush {
 
 .card.flush {
     padding: 0;
-    border: none;
 }
 </style>
