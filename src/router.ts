@@ -8,6 +8,7 @@ import ProjectEditView from "./views/ProjectEditView.vue";
 import ProjectNewView from "./views/ProjectNewView.vue";
 import AuthView from "./views/AuthView.vue";
 import { hasToken } from "./api/client";
+import { waitForAuthInit } from "./stores/auth";
 
 const routes = [
   { path: "/", component: HomeView, meta: { layout: "default" } },
@@ -40,9 +41,16 @@ export const router = createRouter({
   routes,
 });
 
-// 认证守卫：未登录时跳转到登录页
-router.beforeEach((to, _from) => {
-  if (to.meta.guest) return true;
+// 认证守卫：等待 initAuth 完成后再判断
+router.beforeEach(async (to, _from) => {
+  await waitForAuthInit();
+
+  if (to.meta.guest) {
+    // 已登录用户访问登录页 → 跳到首页
+    if (hasToken()) return "/";
+    return true;
+  }
+
   if (!hasToken()) return "/login";
   return true;
 });

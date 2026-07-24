@@ -10,7 +10,9 @@ const state = reactive({
   isLoading: false,
 });
 
-/** 初始化时检查本地 token */
+let initPromise: Promise<void> | null = null;
+
+/** 初始化时检查本地 token，返回 Promise 供路由守卫等待 */
 async function initAuth(): Promise<void> {
   if (!hasToken()) return;
 
@@ -28,13 +30,20 @@ async function initAuth(): Promise<void> {
   }
 }
 
+/** 确保 initAuth 只执行一次，返回可等待的 Promise */
+export function waitForAuthInit(): Promise<void> {
+  if (!initPromise) {
+    initPromise = initAuth();
+  }
+  return initPromise;
+}
+
 /** 登录 */
 async function login(username: string, password: string): Promise<void> {
   const res = await authApi.login({ username, password });
   setToken(res.access_token);
   state.isAuthenticated = true;
 
-  // 获取用户信息
   try {
     const user = await authApi.getMe();
     state.user = user;
@@ -68,7 +77,6 @@ async function refreshUser(): Promise<void> {
     const user = await authApi.getMe();
     state.user = user;
   } catch {
-    // 如果获取失败，尝试登出
     logout();
   }
 }
