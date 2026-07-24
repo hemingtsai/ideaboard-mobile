@@ -101,8 +101,8 @@ function handleEdit() {
     router.push(`/project/${projectId.value}/edit`);
 }
 
-watch(() => route.params.id, () => {
-    if (route.params.id) loadProject();
+watch(() => route.fullPath, () => {
+    loadProject();
 });
 
 onMounted(loadProject);
