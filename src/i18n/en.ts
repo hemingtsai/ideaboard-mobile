@@ -37,5 +37,6 @@ export const message_en = {
     total_messages: "Total",
     this_month: "This Month",
     conversation: "Conversation",
+    todo_placeholder: "Add a todo...",
   },
 };

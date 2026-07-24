@@ -126,7 +126,6 @@ export interface ProjectOverview {
 
 // ========== 设置模块 ==========
 
-/** 用户/系统设置的通用 key-value 结构 */
 export type SettingsGroup = Record<string, unknown>;
 
 export interface UserSettings {
@@ -157,4 +156,49 @@ export interface UpdateSettingsRequest {
 
 export interface ResetSettingsRequest {
   group?: string;
+}
+
+// ========== Todo 模块 ==========
+
+export type TodoStatus = "pending" | "in_progress" | "completed";
+
+export interface Todo {
+  id: number;
+  user_id: number;
+  project_id: number;
+  title: string;
+  description?: string | null;
+  status: TodoStatus;
+  priority: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateTodoRequest {
+  title: string;
+  description?: string;
+  priority?: number;
+}
+
+export interface UpdateTodoRequest {
+  title?: string;
+  description?: string;
+  status?: TodoStatus;
+  priority?: number;
+}
+
+// ========== Agent 模块 ==========
+
+export interface PendingAction {
+  id: number;
+  project_id: number;
+  action_type: string;
+  action_data: Record<string, unknown>;
+  status: string;
+  ai_message?: string | null;
+  created_at: string;
+}
+
+export interface ActionApprovalRequest {
+  approved: boolean;
 }

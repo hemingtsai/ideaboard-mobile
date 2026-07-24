@@ -7,13 +7,16 @@ import ItemCard from "../components/ItemCard.vue";
 import WaveDots from "../components/WaveDots.vue";
 import ProgressBar from "../components/ProgressBar.vue";
 import Heatmap from "../components/Heatmap.vue";
+import TodoItem from "../components/TodoItem.vue";
 import TodoList from "../components/TodoList.vue";
+import Input from "../components/Input.vue";
 import SkeletonBlock from "../components/SkeletonBlock.vue";
 import { useI18n } from "vue-i18n";
 import { getProject } from "../api/modules/projects";
 import { getOverview } from "../api/modules/conversations";
 import { getConversationStats } from "../api/modules/users";
-import type { Project, ProjectOverview } from "../api/types";
+import { getTodos, createTodo, updateTodo } from "../api/modules/todos";
+import type { Project, ProjectOverview, Todo } from "../api/types";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -24,6 +27,8 @@ const projectId = computed(() => Number(route.params.id));
 const project = ref<Project | null>(null);
 const overview = ref<ProjectOverview | null>(null);
 const heatmapData = ref<number[][]>([]);
+const todos = ref<Todo[]>([]);
+const newTodoTitle = ref("");
 const loading = ref(true);
 
 const progressPercent = computed(() => {
@@ -52,19 +57,43 @@ async function loadProject() {
         const id = projectId.value;
         if (!id || isNaN(id)) return;
 
-        const [proj, ov, stats] = await Promise.all([
+        const [proj, ov, stats, todoRes] = await Promise.all([
             getProject(id),
             getOverview(id),
             getConversationStats(21),
+            getTodos(id),
         ]);
 
         project.value = proj;
         overview.value = ov;
         heatmapData.value = buildHeatmap(stats.daily_breakdown);
+        todos.value = todoRes.items;
     } catch {
         project.value = null;
     } finally {
         loading.value = false;
+    }
+}
+
+async function handleToggleTodo(todo: Todo) {
+    const newStatus = todo.status === "completed" ? "pending" : "completed";
+    try {
+        await updateTodo(projectId.value, todo.id, { status: newStatus });
+        todo.status = newStatus;
+    } catch {
+        // 忽略
+    }
+}
+
+async function handleAddTodo() {
+    const title = newTodoTitle.value.trim();
+    if (!title) return;
+    try {
+        const todo = await createTodo(projectId.value, { title });
+        todos.value.unshift(todo);
+        newTodoTitle.value = "";
+    } catch {
+        // 忽略
     }
 }
 
@@ -81,23 +110,22 @@ onActivated(loadProject);
 </script>
 
 <template>
-    <!-- 加载骨架 -->
     <template v-if="loading">
         <div class="skeleton-view">
             <SkeletonBlock height="24px" width="60%" style="margin-bottom: 2vh" />
             <div class="cards">
-            <div class="skeleton-progress">
-                <SkeletonBlock height="14px" width="40%" style="margin-bottom: 2vh" />
-                <div style="padding: 3vw">
-                    <SkeletonBlock height="60px" width="100%" style="margin-bottom: 1vh" />
-                    <SkeletonBlock height="10px" width="100%" />
+                <div class="skeleton-progress">
+                    <SkeletonBlock height="14px" width="40%" style="margin-bottom: 2vh" />
+                    <div style="padding: 3vw">
+                        <SkeletonBlock height="60px" width="100%" style="margin-bottom: 1vh" />
+                        <SkeletonBlock height="10px" width="100%" />
+                    </div>
                 </div>
-            </div>
-            <div class="skeleton-todo">
-                <SkeletonBlock height="14px" width="30%" style="margin-bottom: 1.5vh" />
-                <SkeletonBlock height="16px" width="100%" style="margin-bottom: 1vh" />
-                <SkeletonBlock height="16px" width="80%" />
-            </div>
+                <div class="skeleton-todo">
+                    <SkeletonBlock height="14px" width="30%" style="margin-bottom: 1.5vh" />
+                    <SkeletonBlock height="16px" width="100%" style="margin-bottom: 1vh" />
+                    <SkeletonBlock height="16px" width="80%" />
+                </div>
             </div>
         </div>
     </template>
@@ -107,44 +135,54 @@ onActivated(loadProject);
             <PageTitle>{{ project.name }}</PageTitle>
 
             <div class="cards">
-
-            <ItemCard splited flush rightFull :splitRatio="0.7">
-                <template #card-background>
-                    <WaveDots
-                        :dotSpacing="4"
-                        :waveSpeed="0.15"
-                        :waveWidth="0.4"
-                        :mouseRadius="100"
-                        :mouseStrength="0.4"
-                        :ambientBrightness="0"
-                        :peakBrightness="0.5"
-                    />
-                </template>
-                <template #card-title>{{ t("message.project_progress") }}</template>
-                <template #card-content-left>
-                    <div class="progress-left">
-                        <Heatmap
-                            v-if="heatmapData.length > 0"
-                            :data="heatmapData"
-                            style="padding-bottom: 1vh"
+                <ItemCard splited flush rightFull :splitRatio="0.7">
+                    <template #card-background>
+                        <WaveDots
+                            :dotSpacing="4"
+                            :waveSpeed="0.15"
+                            :waveWidth="0.4"
+                            :mouseRadius="100"
+                            :mouseStrength="0.4"
+                            :ambientBrightness="0"
+                            :peakBrightness="0.5"
                         />
-                        <ProgressBar :height="10" :value="progressPercent" />
-                    </div>
-                </template>
-                <template #card-content-right>
-                    <div class="percents-container">
-                        <div class="percents">
-                            <span class="percents-number">{{ progressPercent }}%</span>
+                    </template>
+                    <template #card-title>{{ t("message.project_progress") }}</template>
+                    <template #card-content-left>
+                        <div class="progress-left">
+                            <Heatmap
+                                v-if="heatmapData.length > 0"
+                                :data="heatmapData"
+                                style="padding-bottom: 1vh"
+                            />
+                            <ProgressBar :height="10" :value="progressPercent" />
                         </div>
-                    </div>
-                </template>
-            </ItemCard>
+                    </template>
+                    <template #card-content-right>
+                        <div class="percents-container">
+                            <div class="percents">
+                                <span class="percents-number">{{ progressPercent }}%</span>
+                            </div>
+                        </div>
+                    </template>
+                </ItemCard>
 
-            <TodoList>
-                <template #title>
-                    {{ t("message.todo_list") }}
-                </template>
-            </TodoList>
+                <TodoList>
+                    <template #title>
+                        {{ t("message.todo_list") }}
+                    </template>
+                    <TodoItem
+                        v-for="todo in todos"
+                        :key="todo.id"
+                        :title="todo.title"
+                        :done="todo.status === 'completed'"
+                        @toggle="handleToggleTodo(todo)"
+                    />
+                </TodoList>
+
+                <form class="add-todo" @submit.prevent="handleAddTodo">
+                    <Input v-model="newTodoTitle" :placeholder="t('message.todo_placeholder') || '添加待办…'" />
+                </form>
             </div>
         </div>
 
@@ -205,6 +243,10 @@ onActivated(loadProject);
     color: var(--bg-primary);
     font-size: 10vw;
     transform: scaleX(0.8);
+}
+
+.add-todo {
+    padding: 0;
 }
 
 /* 骨架屏 */

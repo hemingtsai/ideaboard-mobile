@@ -37,5 +37,6 @@ export const message_zh = {
     total_messages: "总消息",
     this_month: "本月",
     conversation: "对话",
+    todo_placeholder: "添加待办…",
   },
 };
