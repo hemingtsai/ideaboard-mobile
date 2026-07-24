@@ -7,6 +7,7 @@ import ItemCard from "../components/ItemCard.vue";
 import WaveDots from "../components/WaveDots.vue";
 import ProgressBar from "../components/ProgressBar.vue";
 import Heatmap from "../components/Heatmap.vue";
+import TodoList from "../components/TodoList.vue";
 import SkeletonBlock from "../components/SkeletonBlock.vue";
 import { useI18n } from "vue-i18n";
 import { getProject } from "../api/modules/projects";
@@ -84,6 +85,7 @@ onActivated(loadProject);
     <template v-if="loading">
         <div class="skeleton-view">
             <SkeletonBlock height="24px" width="60%" style="margin-bottom: 2vh" />
+            <div class="cards">
             <div class="skeleton-progress">
                 <SkeletonBlock height="14px" width="40%" style="margin-bottom: 2vh" />
                 <div style="padding: 3vw">
@@ -91,12 +93,20 @@ onActivated(loadProject);
                     <SkeletonBlock height="10px" width="100%" />
                 </div>
             </div>
+            <div class="skeleton-todo">
+                <SkeletonBlock height="14px" width="30%" style="margin-bottom: 1.5vh" />
+                <SkeletonBlock height="16px" width="100%" style="margin-bottom: 1vh" />
+                <SkeletonBlock height="16px" width="80%" />
+            </div>
+            </div>
         </div>
     </template>
 
     <template v-else-if="project">
         <div class="view-content-container">
             <PageTitle>{{ project.name }}</PageTitle>
+
+            <div class="cards">
 
             <ItemCard splited flush rightFull :splitRatio="0.7">
                 <template #card-background>
@@ -129,6 +139,13 @@ onActivated(loadProject);
                     </div>
                 </template>
             </ItemCard>
+
+            <TodoList>
+                <template #title>
+                    {{ t("message.todo_list") }}
+                </template>
+            </TodoList>
+            </div>
         </div>
 
         <Fab
@@ -148,6 +165,12 @@ onActivated(loadProject);
 <style scoped>
 .view-content-container {
     min-height: 100%;
+}
+
+.cards {
+    display: flex;
+    flex-direction: column;
+    gap: 2vh;
 }
 
 .error-state {
@@ -190,6 +213,12 @@ onActivated(loadProject);
 }
 
 .skeleton-progress {
+    border: 1px solid var(--border-primary);
+    padding: 2vh;
+    margin-bottom: 2vh;
+}
+
+.skeleton-todo {
     border: 1px solid var(--border-primary);
     padding: 2vh;
 }
