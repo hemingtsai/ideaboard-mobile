@@ -22,13 +22,13 @@ export function approveAction(
 
 /**
  * Agent 流式对话（SSE）
- * 返回 ReadableStream，调用方自行处理流式数据
+ * 返回 Response，调用方通过 body.getReader() 读取流
  */
 export function agentChatStream(
   projectId: number,
   message: string,
-  token: string,
 ): Promise<Response> {
+  const token = localStorage.getItem("access_token");
   return fetch(
     `${import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000"}/api/v1/projects/${projectId}/agent/chat`,
     {
