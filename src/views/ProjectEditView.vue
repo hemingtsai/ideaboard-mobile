@@ -6,19 +6,29 @@ import HeaderLayout from "../layouts/HeaderLayout.vue";
 import MessageBubble from "../components/MessageBubble.vue";
 import MessageComposer from "../components/MessageComposer.vue";
 import MarkdownRender from "../components/MarkdownRender.vue";
+import Button from "../components/Button.vue";
 import SkeletonBlock from "../components/SkeletonBlock.vue";
 import { getProject } from "../api/modules/projects";
 import { getConversations } from "../api/modules/conversations";
-import { agentChatStream } from "../api/modules/agent";
-import type { Project, ConversationMessage } from "../api/types";
+import { agentChatStream, approveAction } from "../api/modules/agent";
+import type { Project, ConversationMessage, AgentActionProposal } from "../api/types";
 
 const { t } = useI18n();
 const route = useRoute();
+
+/** 审批卡片 UI 状态 */
+interface ActionCard {
+    id: number;
+    proposal: AgentActionProposal;
+    resolved: boolean;
+    resultMessage: string;
+}
 
 const projectId = computed(() => Number(route.params.id));
 
 const project = ref<Project | null>(null);
 const messages = ref<ConversationMessage[]>([]);
+const actionCards = ref<ActionCard[]>([]);
 const loading = ref(true);
 const sending = ref(false);
 const streamingContent = ref("");
@@ -46,6 +56,7 @@ async function loadConversations() {
 
         project.value = proj;
         messages.value = [...convs.items].reverse();
+        actionCards.value = [];
         scrollToBottom();
     } catch {
         project.value = null;
@@ -58,7 +69,6 @@ async function handleSend(message: string) {
     if (sending.value) return;
     sending.value = true;
 
-    // 添加用户消息
     const userMsg: ConversationMessage = {
         id: Date.now(),
         role: "user",
@@ -68,7 +78,6 @@ async function handleSend(message: string) {
     messages.value.push(userMsg);
     scrollToBottom();
 
-    // 创建流式 assistant 消息占位
     const streamId = Date.now() + 1;
     const assistantMsg: ConversationMessage = {
         id: streamId,
@@ -77,6 +86,7 @@ async function handleSend(message: string) {
         created_at: new Date().toISOString(),
     };
     messages.value.push(assistantMsg);
+    actionCards.value = [];
     streamingContent.value = "";
 
     try {
@@ -103,11 +113,33 @@ async function handleSend(message: string) {
 
                 try {
                     const event = JSON.parse(trimmed.slice(6));
+
                     if (event.type === "text") {
                         streamingContent.value += event.content;
                         assistantMsg.content = streamingContent.value;
+                    } else if (event.type === "action_proposal") {
+                        const proposal = event.action as AgentActionProposal;
+                        // 仅 pending 状态的 create_todo 需要审批
+                        if (!event.action?.auto_executed && proposal.status === "pending") {
+                            assistantMsg.content = streamingContent.value;
+                            streamingContent.value = "";
+                            // 审批卡片挂到当前消息上
+                            actionCards.value.push({
+                                id: streamId,
+                                proposal,
+                                resolved: false,
+                                resultMessage: "",
+                            });
+                            // 创建新的 assistant 消息继续接收后续文本
+                            const nextMsg: ConversationMessage = {
+                                id: Date.now(),
+                                role: "assistant",
+                                content: "",
+                                created_at: new Date().toISOString(),
+                            };
+                            messages.value.push(nextMsg);
+                        }
                     }
-                    // action_proposal 和 done 暂时不需要前端特殊处理
                 } catch {
                     // 跳过解析失败的行
                 }
@@ -123,6 +155,28 @@ async function handleSend(message: string) {
     } finally {
         sending.value = false;
         scrollToBottom();
+    }
+}
+
+async function handleApprove(card: ActionCard) {
+    if (!card.proposal.id) return;
+    try {
+        await approveAction(projectId.value, card.proposal.id, true);
+        card.resolved = true;
+        card.resultMessage = t("message.action_approved") || "已执行";
+    } catch {
+        card.resultMessage = t("message.action_failed") || "执行失败";
+    }
+}
+
+async function handleReject(card: ActionCard) {
+    if (!card.proposal.id) return;
+    try {
+        await approveAction(projectId.value, card.proposal.id, false);
+        card.resolved = true;
+        card.resultMessage = t("message.action_rejected") || "已拒绝";
+    } catch {
+        card.resultMessage = t("message.action_failed") || "操作失败";
     }
 }
 
@@ -155,17 +209,41 @@ onActivated(loadConversations);
                 <div v-if="messages.length === 0" class="empty-chat">
                     {{ t("message.start_conversation") }}
                 </div>
-                <div
-                    v-for="msg in messages"
-                    :key="msg.id"
-                    class="message-row"
-                    :class="msg.role"
-                >
-                    <MessageBubble v-if="msg.role === 'user'">
-                        {{ msg.content }}
-                    </MessageBubble>
-                    <MarkdownRender v-else :content="msg.content" />
-                </div>
+                <template v-for="msg in messages" :key="msg.id">
+                    <div class="message-row" :class="msg.role">
+                        <MessageBubble v-if="msg.role === 'user'">
+                            {{ msg.content }}
+                        </MessageBubble>
+                        <MarkdownRender v-else-if="msg.content" :content="msg.content" />
+                    </div>
+                    <!-- 该消息后的审批卡片 -->
+                    <div
+                        v-for="card in actionCards.filter(c => c.id === msg.id)"
+                        :key="'action-' + card.id"
+                        class="action-card"
+                    >
+                        <div class="action-card-body">
+                            <span class="action-type">
+                                {{ card.proposal.action_type === 'create_todo' ? '📋' : '🔧' }}
+                                {{ card.proposal.message }}
+                            </span>
+                            <div v-if="card.proposal.action_type === 'create_todo'" class="action-detail">
+                                <strong>{{ (card.proposal.action_data as any).title }}</strong>
+                            </div>
+                        </div>
+                        <div v-if="!card.resolved" class="action-card-btns">
+                            <Button variant="primary" @click="handleApprove(card)">
+                                {{ t("message.approve") || "批准" }}
+                            </Button>
+                            <Button @click="handleReject(card)">
+                                {{ t("message.reject") || "拒绝" }}
+                            </Button>
+                        </div>
+                        <div v-else class="action-card-result">
+                            {{ card.resultMessage }}
+                        </div>
+                    </div>
+                </template>
                 <div v-if="sending && !streamingContent" class="typing-indicator">
                     <div class="dot-pulse" />
                 </div>
@@ -219,6 +297,47 @@ onActivated(loadConversations);
 @keyframes pulse {
     0%, 100% { opacity: 0.3; transform: scale(0.8); }
     50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* 审批卡片 */
+.action-card {
+    margin: 1vh 2vw;
+    border: 1px solid var(--border-primary);
+    padding: 1.5vh 2vh;
+}
+
+.action-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8vh;
+    margin-bottom: 1.5vh;
+}
+
+.action-type {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.action-detail {
+    padding: 1vh;
+    background: var(--bg-secondary);
+    font-size: 14px;
+}
+
+.action-card-btns {
+    display: flex;
+    gap: 2vh;
+}
+
+.action-card-btns :deep(.btn) {
+    flex: 1;
+}
+
+.action-card-result {
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 1vh 0;
 }
 
 /* 骨架屏 */

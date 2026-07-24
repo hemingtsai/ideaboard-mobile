@@ -202,3 +202,12 @@ export interface PendingAction {
 export interface ActionApprovalRequest {
   approved: boolean;
 }
+
+/** SSE action_proposal 事件中的 action */
+export interface AgentActionProposal {
+  id?: number;
+  action_type: string;
+  action_data: Record<string, unknown>;
+  message: string;
+  status: string;
+}

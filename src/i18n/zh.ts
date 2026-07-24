@@ -38,5 +38,10 @@ export const message_zh = {
     this_month: "本月",
     conversation: "对话",
     todo_placeholder: "添加待办…",
+    approve: "批准",
+    reject: "拒绝",
+    action_approved: "已执行",
+    action_rejected: "已拒绝",
+    action_failed: "操作失败",
   },
 };

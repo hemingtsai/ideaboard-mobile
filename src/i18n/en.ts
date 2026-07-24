@@ -38,5 +38,10 @@ export const message_en = {
     this_month: "This Month",
     conversation: "Conversation",
     todo_placeholder: "Add a todo...",
+    approve: "Approve",
+    reject: "Reject",
+    action_approved: "Executed",
+    action_rejected: "Rejected",
+    action_failed: "Operation failed",
   },
 };
