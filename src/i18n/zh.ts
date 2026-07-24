@@ -36,5 +36,6 @@ export const message_zh = {
     role: "角色",
     total_messages: "总消息",
     this_month: "本月",
+    conversation: "对话",
   },
 };

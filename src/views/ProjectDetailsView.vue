@@ -4,18 +4,15 @@ import { useRoute, useRouter } from "vue-router";
 import Fab from "../components/Fab.vue";
 import PageTitle from "../components/PageTitle.vue";
 import ItemCard from "../components/ItemCard.vue";
-import MessageBubble from "../components/MessageBubble.vue";
-import MessageComposer from "../components/MessageComposer.vue";
 import WaveDots from "../components/WaveDots.vue";
 import ProgressBar from "../components/ProgressBar.vue";
 import Heatmap from "../components/Heatmap.vue";
-import MarkdownRender from "../components/MarkdownRender.vue";
 import SkeletonBlock from "../components/SkeletonBlock.vue";
 import { useI18n } from "vue-i18n";
 import { getProject } from "../api/modules/projects";
-import { getConversations, getOverview, sendMessage } from "../api/modules/conversations";
+import { getOverview } from "../api/modules/conversations";
 import { getConversationStats } from "../api/modules/users";
-import type { Project, ConversationMessage, ProjectOverview } from "../api/types";
+import type { Project, ProjectOverview } from "../api/types";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -25,12 +22,9 @@ const projectId = computed(() => Number(route.params.id));
 
 const project = ref<Project | null>(null);
 const overview = ref<ProjectOverview | null>(null);
-const messages = ref<ConversationMessage[]>([]);
 const heatmapData = ref<number[][]>([]);
 const loading = ref(true);
-const sending = ref(false);
 
-/** 基于真实数据计算进度百分比 */
 const progressPercent = computed(() => {
     if (!overview.value) return 0;
     const { total, this_month } = overview.value.conversations;
@@ -57,51 +51,19 @@ async function loadProject() {
         const id = projectId.value;
         if (!id || isNaN(id)) return;
 
-        const [proj, convs, ov, stats] = await Promise.all([
+        const [proj, ov, stats] = await Promise.all([
             getProject(id),
-            getConversations(id),
             getOverview(id),
             getConversationStats(21),
         ]);
 
         project.value = proj;
         overview.value = ov;
-        messages.value = [...convs.items].reverse();
         heatmapData.value = buildHeatmap(stats.daily_breakdown);
     } catch {
         project.value = null;
     } finally {
         loading.value = false;
-    }
-}
-
-async function handleSend(message: string) {
-    if (sending.value) return;
-    sending.value = true;
-
-    const userMsg: ConversationMessage = {
-        id: Date.now(),
-        role: "user",
-        content: message,
-        created_at: new Date().toISOString(),
-    };
-    messages.value.push(userMsg);
-
-    try {
-        const reply = await sendMessage(projectId.value, { message });
-        messages.value.push(reply);
-        // 发送消息后刷新概览数据
-        overview.value = await getOverview(projectId.value);
-    } catch (e: unknown) {
-        const errMsg: ConversationMessage = {
-            id: Date.now(),
-            role: "assistant",
-            content: e instanceof Error ? e.message : "请求失败，请重试",
-            created_at: new Date().toISOString(),
-        };
-        messages.value.push(errMsg);
-    } finally {
-        sending.value = false;
     }
 }
 
@@ -129,18 +91,6 @@ onActivated(loadProject);
                     <SkeletonBlock height="10px" width="100%" />
                 </div>
             </div>
-            <div class="skeleton-chat">
-                <SkeletonBlock height="14px" width="30%" style="margin-bottom: 2vh" />
-                <div class="skeleton-msg right">
-                    <SkeletonBlock height="36px" width="70%" />
-                </div>
-                <div class="skeleton-msg left">
-                    <SkeletonBlock height="48px" width="80%" />
-                </div>
-                <div class="skeleton-msg right">
-                    <SkeletonBlock height="24px" width="50%" />
-                </div>
-            </div>
         </div>
     </template>
 
@@ -148,68 +98,37 @@ onActivated(loadProject);
         <div class="view-content-container">
             <PageTitle>{{ project.name }}</PageTitle>
 
-            <div class="cards">
-                <!-- 进度卡片 -->
-                <ItemCard splited flush rightFull :splitRatio="0.7">
-                    <template #card-background>
-                        <WaveDots
-                            :dotSpacing="4"
-                            :waveSpeed="0.15"
-                            :waveWidth="0.4"
-                            :mouseRadius="100"
-                            :mouseStrength="0.4"
-                            :ambientBrightness="0"
-                            :peakBrightness="0.5"
+            <ItemCard splited flush rightFull :splitRatio="0.7">
+                <template #card-background>
+                    <WaveDots
+                        :dotSpacing="4"
+                        :waveSpeed="0.15"
+                        :waveWidth="0.4"
+                        :mouseRadius="100"
+                        :mouseStrength="0.4"
+                        :ambientBrightness="0"
+                        :peakBrightness="0.5"
+                    />
+                </template>
+                <template #card-title>{{ t("message.project_progress") }}</template>
+                <template #card-content-left>
+                    <div class="progress-left">
+                        <Heatmap
+                            v-if="heatmapData.length > 0"
+                            :data="heatmapData"
+                            style="padding-bottom: 1vh"
                         />
-                    </template>
-                    <template #card-title>{{ t("message.project_progress") }}</template>
-                    <template #card-content-left>
-                        <div class="progress-left">
-                            <Heatmap
-                                v-if="heatmapData.length > 0"
-                                :data="heatmapData"
-                                style="padding-bottom: 1vh"
-                            />
-                            <ProgressBar :height="10" :value="progressPercent" />
-                        </div>
-                    </template>
-                    <template #card-content-right>
-                        <div class="percents-container">
-                            <div class="percents">
-                                <span class="percents-number">{{ progressPercent }}%</span>
-                            </div>
-                        </div>
-                    </template>
-                </ItemCard>
-
-                <!-- 对话区域 -->
-                <div class="conversation-area">
-                    <div class="message-list">
-                        <div v-if="messages.length === 0" class="empty-chat">
-                            {{ t("message.start_conversation") }}
-                        </div>
-                        <div
-                            v-for="msg in messages"
-                            :key="msg.id"
-                            class="message-row"
-                            :class="msg.role"
-                        >
-                            <MessageBubble v-if="msg.role === 'user'">
-                                {{ msg.content }}
-                            </MessageBubble>
-                            <MarkdownRender v-else :content="msg.content" />
-                        </div>
-                        <div v-if="sending" class="typing-indicator">
-                            <WaveDots
-                                :dotSpacing="3"
-                                :ambientBrightness="0.3"
-                                :peakBrightness="0.6"
-                            />
+                        <ProgressBar :height="10" :value="progressPercent" />
+                    </div>
+                </template>
+                <template #card-content-right>
+                    <div class="percents-container">
+                        <div class="percents">
+                            <span class="percents-number">{{ progressPercent }}%</span>
                         </div>
                     </div>
-                    <MessageComposer @send="handleSend" />
-                </div>
-            </div>
+                </template>
+            </ItemCard>
         </div>
 
         <Fab
@@ -229,46 +148,6 @@ onActivated(loadProject);
 <style scoped>
 .view-content-container {
     min-height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.cards {
-    display: flex;
-    flex-direction: column;
-    gap: 2vh;
-    flex: 1;
-    min-height: 0;
-}
-
-.conversation-area {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-}
-
-.message-list {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 1vh 0;
-}
-
-.message-row {
-    padding: 0.5vh 2vw;
-}
-
-.message-row.user {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.empty-chat {
-    text-align: center;
-    color: var(--text-tertiary);
-    font-size: 14px;
-    padding: 4vh 0;
 }
 
 .error-state {
@@ -277,11 +156,6 @@ onActivated(loadProject);
     align-items: center;
     min-height: 50vh;
     color: var(--text-tertiary);
-}
-
-.typing-indicator {
-    padding: 1vh 2vw;
-    width: 60px;
 }
 
 .progress-left {
@@ -318,24 +192,5 @@ onActivated(loadProject);
 .skeleton-progress {
     border: 1px solid var(--border-primary);
     padding: 2vh;
-    margin-bottom: 2vh;
-}
-
-.skeleton-chat {
-    border: 1px solid var(--border-primary);
-    padding: 2vh;
-}
-
-.skeleton-msg {
-    margin-bottom: 1.5vh;
-    display: flex;
-}
-
-.skeleton-msg.right {
-    justify-content: flex-end;
-}
-
-.skeleton-msg.left {
-    justify-content: flex-start;
 }
 </style>

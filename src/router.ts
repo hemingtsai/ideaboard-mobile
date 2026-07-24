@@ -26,7 +26,7 @@ const routes = [
   {
     path: "/project/:id",
     component: ProjectDetailsView,
-    meta: { layout: "header", title: "Test Project" },
+    meta: { layout: "header" },
   },
   {
     path: "/project/:id/edit",

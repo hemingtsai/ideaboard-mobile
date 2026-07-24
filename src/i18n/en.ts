@@ -36,5 +36,6 @@ export const message_en = {
     role: "Role",
     total_messages: "Total",
     this_month: "This Month",
+    conversation: "Conversation",
   },
 };
