@@ -106,7 +106,9 @@ onActivated(loadSettings);
             <!-- 退出 -->
             <ItemCard noborder notitle>
                 <template #card-content>
-                    <Button variant="primary" @click="handleLogout">{{ t("message.logout") }}</Button>
+                    <div class="logout-btn">
+                        <Button variant="primary" @click="handleLogout">{{ t("message.logout") }}</Button>
+                    </div>
                 </template>
             </ItemCard>
         </div>
@@ -122,6 +124,10 @@ onActivated(loadSettings);
     display: flex;
     flex-direction: column;
     gap: 2vh;
+}
+
+.logout-btn :deep(.btn) {
+    width: 100%;
 }
 
 .info-row {
