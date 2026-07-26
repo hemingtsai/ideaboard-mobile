@@ -40,7 +40,8 @@ defineEmits<{
 <style scoped>
 .fab {
     position: fixed;
-    bottom: calc(env(safe-area-inset-bottom) + 3vh);
+    /* 底部导航栏上方：导航栏约 8vh + safe-area */
+    bottom: calc(env(safe-area-inset-bottom) + 8vh);
     right: 3vh;
     z-index: 10;
 }
