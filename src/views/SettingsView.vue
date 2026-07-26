@@ -104,9 +104,9 @@ onActivated(loadSettings);
             </ItemCard>
 
             <!-- 退出 -->
-            <ItemCard noborder flush notitle>
+            <ItemCard noborder notitle>
                 <template #card-content>
-                    <Button @click="handleLogout">{{ t("message.logout") }}</Button>
+                    <Button variant="primary" @click="handleLogout">{{ t("message.logout") }}</Button>
                 </template>
             </ItemCard>
         </div>
