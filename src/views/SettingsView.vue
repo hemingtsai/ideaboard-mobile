@@ -55,7 +55,7 @@ onActivated(loadSettings);
 
         <div class="cards">
             <!-- 账号 -->
-            <ItemCard v-if="loading" noborder flush>
+            <ItemCard v-if="loading" noborder>
                 <template #card-title>{{ t("message.account") }}</template>
                 <template #card-content>
                     <div class="skeleton-info">
@@ -66,7 +66,7 @@ onActivated(loadSettings);
                     </div>
                 </template>
             </ItemCard>
-            <ItemCard v-else-if="authState.user" noborder flush>
+            <ItemCard v-else-if="authState.user" noborder>
                 <template #card-title>{{ t("message.account") }}</template>
                 <template #card-content>
                     <div class="info-row">
@@ -85,13 +85,13 @@ onActivated(loadSettings);
             </ItemCard>
 
             <!-- 偏好 -->
-            <ItemCard v-if="loading" noborder flush>
+            <ItemCard v-if="loading" noborder>
                 <template #card-title>{{ t("message.preferences") }}</template>
                 <template #card-content>
                     <SkeletonBlock height="16px" width="100%" />
                 </template>
             </ItemCard>
-            <ItemCard v-else-if="settings" noborder flush>
+            <ItemCard v-else-if="settings" noborder>
                 <template #card-title>{{ t("message.preferences") }}</template>
                 <template #card-content>
                     <div class="setting-row" @click="handleToggleTheme">
