@@ -39,10 +39,9 @@ defineEmits<{
 
 <style scoped>
 .fab {
-    position: sticky;
-    bottom: 1vh;
-    align-self: flex-end;
-    margin-top: 2vh;
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom) + 3vh);
+    right: 3vh;
     z-index: 10;
 }
 </style>
