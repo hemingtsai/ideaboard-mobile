@@ -80,6 +80,8 @@ async function handleToggleTodo(todo: Todo) {
     try {
         await updateTodo(projectId.value, todo.id, { status: newStatus });
         todo.status = newStatus;
+        // 同步刷新概览进度
+        overview.value = await getOverview(projectId.value);
     } catch {
         // 忽略
     }
@@ -92,6 +94,8 @@ async function handleAddTodo() {
         const todo = await createTodo(projectId.value, { title });
         todos.value.unshift(todo);
         newTodoTitle.value = "";
+        // 同步刷新概览进度
+        overview.value = await getOverview(projectId.value);
     } catch {
         // 忽略
     }
