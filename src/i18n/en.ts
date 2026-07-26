@@ -42,6 +42,6 @@ export const message_en = {
     reject: "Reject",
     action_approved: "Executed",
     action_rejected: "Rejected",
-    action_failed: "Operation failed",
+    action_failed: "Failed",
   },
 };
